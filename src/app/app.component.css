@@ -1,0 +1,40 @@
+.app-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.creditos {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  z-index: 1000;
+}
+
+.creditos-link {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 11px;
+  color: rgba(100, 100, 100, 0.3);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* .creditos-link:hover {
+  color: white;
+  background-color: #2563eb;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+} */
+
+/* Para móviles, hacerlo más pequeño */
+@media (max-width: 768px) {
+  .creditos-link {
+    font-size: 9px;
+    bottom: 10px;
+    right: 10px;
+    padding: 3px 6px;
+  }
+}

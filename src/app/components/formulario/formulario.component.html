@@ -1,0 +1,205 @@
+<div class="rendicion-container">
+    
+    <header>
+        <div class="user-header">
+            <h1>Rendición de Cuentas: {{ becado()?.name || 'Becado' }}</h1>
+            <p>DNI: <strong>{{ becado()?.dni || 'N/A' }}</strong></p>
+        </div>
+        <button class="logout-button" (click)="logout()">Cerrar Sesión</button>
+    </header>
+
+    <form [formGroup]="rendicionForm" (ngSubmit)="submitRendicion()" class="rendicion-form">
+
+        <section class="periodo-section">
+            <h2>1. Período del Reporte</h2>
+            <div class="row">
+                <div class="form-group">
+                    <label for="fechaInicio">Del Día:</label>
+                    <input type="date" id="fechaInicio" formControlName="fechaInicio" required>
+                </div>
+                <div class="form-group">
+                    <label for="fechaFin">Al Día:</label>
+                    <input type="date" id="fechaFin" formControlName="fechaFin" required>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>2. Gastos de Movilidad</h2>
+            
+            <div class="table-container">
+                <div class="table-header row">
+                    <div class="col-fecha">FECHA</div>
+                    <div class="col-ruta">RUTA (DEL)</div>
+                    <div class="col-ruta">RUTA (AL)</div>
+                    <div class="col-monto">SOLES</div>
+                    <div class="col-evidencia">EVIDENCIA</div>
+                    <div class="col-acciones"></div>
+                </div>
+
+                <div formArrayName="gastosMovilidad" *ngFor="let control of gastosMovilidadArray.controls; let i = index">
+                    <div [formGroupName]="i" class="table-row row">
+                        <div class="col-fecha"><input type="date" formControlName="fecha" required></div>
+                        <div class="col-ruta"><input type="text" formControlName="rutaDel" placeholder="Ej: Chancay" required></div>
+                        <div class="col-ruta"><input type="text" formControlName="rutaAl" placeholder="Ej: Senati" required></div>
+                        <div class="col-monto"><input type="number" formControlName="monto" min="0.01" placeholder="Monto" required></div>
+                        <div class="col-evidencia">
+                            <input 
+                                type="file" 
+                                #fileInput
+                                (change)="onFileSelected($event, i)" 
+                                accept="image/*" 
+                                style="display: none"
+                            >
+                            
+                            <div *ngIf="!control.get('evidencia')?.value" class="evidencia-actions">
+                                <button type="button" class="upload-button" (click)="fileInput.click()">
+                                    📷 Cargar Imagen
+                                </button>
+                            </div>
+                            
+                            <div *ngIf="control.get('evidencia')?.value" class="evidencia-loaded">
+                                <div class="file-info">
+                                    <span class="file-name">{{ getFileName(control.get('evidencia')?.value) }}</span>
+                                    <div class="file-actions">
+                                        <button type="button" class="view-button" (click)="viewImage(control.get('evidencia')?.value)">
+                                            👁️ Ver
+                                        </button>
+                                        <button type="button" class="delete-button" (click)="removeImage(i)">
+                                            🗑️ Borrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-acciones">
+                            <button type="button" class="remove-button" (click)="removeMovilidad(i)" [disabled]="gastosMovilidadArray.length <= 1">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="add-button" (click)="addMovilidad()">+ Añadir Gasto de Movilidad</button>
+        </section>
+
+        <section class="firma-section">
+            <h2>3. Firma del Becado</h2>
+            <div class="row">
+                <div class="form-group large">
+                    <label for="lugarFirma">Lugar de la Firma:</label>
+                    <input type="text" id="lugarFirma" formControlName="lugarFirma" 
+                           placeholder="Ej: Huaral, Chancay Josefa Espinoza" required>
+                </div>
+            </div>
+            
+            <div class="firma-options">
+                <div class="firma-option">
+                    <h3>Opción A: Dibujar Firma</h3>
+                    <div class="firma-canvas-container">
+                        <canvas #firmaCanvas 
+                                width="400" 
+                                height="150"
+                                (mousedown)="startDrawing($event)"
+                                (mousemove)="draw($event)"
+                                (mouseup)="stopDrawing()"
+                                (mouseleave)="stopDrawing()"
+                                (touchstart)="startDrawingTouch($event)"
+                                (touchmove)="drawTouch($event)"
+                                (touchend)="stopDrawing()">
+                        </canvas>
+                        <div class="firma-actions">
+                            <button type="button" class="clear-firma-button" (click)="clearFirma()">
+                                🗑️ Limpiar Firma
+                            </button>
+                            <span class="firma-guia">Firme dentro del recuadro (400x150px)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="firma-option">
+                    <h3>Opción B: Cargar Imagen de Firma</h3>
+                    <div class="firma-upload-container">
+                        <div class="upload-info">
+                            <p><strong>Medidas recomendadas:</strong> 400x150px</p>
+                            <p><strong>Formatos:</strong> PNG, JPG, JPEG</p>
+                            <p><em>La imagen se ajustará automáticamente al tamaño requerido</em></p>
+                        </div>
+                        
+                        <div class="upload-area" 
+                             [class.has-image]="rendicionForm.get('firmaImagen')?.value"
+                             (click)="firmaFileInput.click()">
+                            
+                            <input type="file" 
+                                   #firmaFileInput
+                                   (change)="onFirmaImageSelected($event)" 
+                                   accept="image/*" 
+                                   style="display: none">
+                            
+                            <div *ngIf="!rendicionForm.get('firmaImagen')?.value" class="upload-placeholder">
+                                <div class="upload-icon">📁</div>
+                                <p>Haga clic para seleccionar imagen de firma</p>
+                                <p class="upload-subtext">Tamaño recomendado: 400x150px</p>
+                            </div>
+                            
+                            <div *ngIf="rendicionForm.get('firmaImagen')?.value" class="upload-preview">
+                                <img [src]="rendicionForm.get('firmaImagen')?.value" alt="Firma cargada">
+                                <div class="upload-actions">
+                                    <button type="button" class="view-button" (click)="viewFirmaImage($event)">
+                                        👁️ Ver
+                                    </button>
+                                    <button type="button" class="delete-button" (click)="removeFirmaImage($event)">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                                <p class="file-name">{{ getFirmaImageName() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="firma-seleccionada" *ngIf="getFirmaSeleccionada()">
+                <strong>Firma seleccionada:</strong> 
+                <span>{{ getFirmaSeleccionada() }}</span>
+                <button type="button" class="limpiar-todo-button" (click)="limpiarTodasFirmas()">
+                    🗑️ Limpiar Todas las Firmas
+                </button>
+            </div>
+        </section>
+
+        <footer class="footer-summary">
+            <div class="total-summary">
+                <strong>TOTAL GASTOS A RENDIR:</strong>
+                <span>S/ {{ totalGastos() | number:'1.2-2' }}</span>
+            </div>
+            
+            <button type="submit" [disabled]="rendicionForm.invalid" class="submit-button">
+                GENERAR Y DESCARGAR PDF
+            </button>
+
+            <button *ngIf="pdfGenerado" 
+                    type="button" 
+                    (click)="redirigirAGoogleForms()"
+                    class="drive-button">
+                📤 SUBIR ARCHIVO AL FORMULARIO
+            </button>
+
+            <p *ngIf="rendicionForm.invalid && rendicionForm.touched" class="error-message">
+                Por favor, complete todos los campos requeridos para continuar.
+            </p>
+
+            <div *ngIf="uploadMessage" class="upload-message" [class.success]="uploadSuccess" [class.error]="!uploadSuccess">
+                {{ uploadMessage }}
+            </div>
+        </footer>
+
+    </form>
+</div>
+
+
+<div *ngIf="selectedImage" class="image-modal" (click)="closeImageModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <span class="close-button" (click)="closeImageModal()">&times;</span>
+        <img [src]="selectedImage" alt="Evidencia">
+    </div>
+</div>
