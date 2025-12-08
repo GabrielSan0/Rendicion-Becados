@@ -1,205 +1,248 @@
-<div class="rendicion-container">
-    
-    <header>
-        <div class="user-header">
-            <h1>Rendición de Cuentas: {{ becado()?.name || 'Becado' }}</h1>
-            <p>DNI: <strong>{{ becado()?.dni || 'N/A' }}</strong></p>
+<div class="container mt-4">
+  <!-- Header -->
+  <header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div>
+      <h1 class="h3 text-primary mb-1">Rendición de Cuentas</h1>
+      <p class="mb-0 text-muted">
+        <strong>{{ becado()?.name || 'Becado' }}</strong> | 
+        DNI: <strong>{{ becado()?.dni || 'N/A' }}</strong>
+      </p>
+    </div>
+    <button class="btn btn-danger btn-sm" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+    </button>
+  </header>
+
+  <form [formGroup]="rendicionForm" (ngSubmit)="submitRendicion()">
+    <!-- 1. Período -->
+    <div class="card mb-3">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">1. Período del Reporte</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Del Día:</label>
+            <input type="date" class="form-control" formControlName="fechaInicio" required>
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Al Día:</label>
+            <input type="date" class="form-control" formControlName="fechaFin" required>
+          </div>
         </div>
-        <button class="logout-button" (click)="logout()">Cerrar Sesión</button>
-    </header>
+      </div>
+    </div>
 
-    <form [formGroup]="rendicionForm" (ngSubmit)="submitRendicion()" class="rendicion-form">
-
-        <section class="periodo-section">
-            <h2>1. Período del Reporte</h2>
-            <div class="row">
-                <div class="form-group">
-                    <label for="fechaInicio">Del Día:</label>
-                    <input type="date" id="fechaInicio" formControlName="fechaInicio" required>
-                </div>
-                <div class="form-group">
-                    <label for="fechaFin">Al Día:</label>
-                    <input type="date" id="fechaFin" formControlName="fechaFin" required>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <h2>2. Gastos de Movilidad</h2>
-            
-            <div class="table-container">
-                <div class="table-header row">
-                    <div class="col-fecha">FECHA</div>
-                    <div class="col-ruta">RUTA (DEL)</div>
-                    <div class="col-ruta">RUTA (AL)</div>
-                    <div class="col-monto">SOLES</div>
-                    <div class="col-evidencia">EVIDENCIA</div>
-                    <div class="col-acciones"></div>
-                </div>
-
-                <div formArrayName="gastosMovilidad" *ngFor="let control of gastosMovilidadArray.controls; let i = index">
-                    <div [formGroupName]="i" class="table-row row">
-                        <div class="col-fecha"><input type="date" formControlName="fecha" required></div>
-                        <div class="col-ruta"><input type="text" formControlName="rutaDel" placeholder="Ej: Chancay" required></div>
-                        <div class="col-ruta"><input type="text" formControlName="rutaAl" placeholder="Ej: Senati" required></div>
-                        <div class="col-monto"><input type="number" formControlName="monto" min="0.01" placeholder="Monto" required></div>
-                        <div class="col-evidencia">
-                            <input 
-                                type="file" 
-                                #fileInput
-                                (change)="onFileSelected($event, i)" 
-                                accept="image/*" 
-                                style="display: none"
-                            >
-                            
-                            <div *ngIf="!control.get('evidencia')?.value" class="evidencia-actions">
-                                <button type="button" class="upload-button" (click)="fileInput.click()">
-                                    📷 Cargar Imagen
-                                </button>
-                            </div>
-                            
-                            <div *ngIf="control.get('evidencia')?.value" class="evidencia-loaded">
-                                <div class="file-info">
-                                    <span class="file-name">{{ getFileName(control.get('evidencia')?.value) }}</span>
-                                    <div class="file-actions">
-                                        <button type="button" class="view-button" (click)="viewImage(control.get('evidencia')?.value)">
-                                            👁️ Ver
-                                        </button>
-                                        <button type="button" class="delete-button" (click)="removeImage(i)">
-                                            🗑️ Borrar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-acciones">
-                            <button type="button" class="remove-button" (click)="removeMovilidad(i)" [disabled]="gastosMovilidadArray.length <= 1">🗑️</button>
-                        </div>
+    <!-- 2. Gastos de Movilidad -->
+    <div class="card mb-3">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">2. Gastos de Movilidad</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th width="15%">FECHA</th>
+                <th width="25%">RUTA (DEL)</th>
+                <th width="25%">RUTA (AL)</th>
+                <th width="15%">SOLES</th>
+                <th width="15%">EVIDENCIA</th>
+                <th width="5%"></th>
+              </tr>
+            </thead>
+            <tbody formArrayName="gastosMovilidad">
+              <tr *ngFor="let control of gastosMovilidadArray.controls; let i = index" [formGroupName]="i">
+                <td><input type="date" class="form-control form-control-sm" formControlName="fecha" required></td>
+                <td><input type="text" class="form-control form-control-sm" formControlName="rutaDel" placeholder="Ej: Chancay" required></td>
+                <td><input type="text" class="form-control form-control-sm" formControlName="rutaAl" placeholder="Ej: Senati" required></td>
+                <td><input type="number" class="form-control form-control-sm" formControlName="monto" min="0.01" placeholder="0.00" step="0.01" required></td>
+                <td>
+                  <input type="file" #fileInput (change)="onFileSelected($event, i)" accept="image/*" style="display: none">
+                  <div *ngIf="!control.get('evidencia')?.value">
+                    <button type="button" class="btn btn-outline-primary btn-sm w-100" (click)="fileInput.click()">
+                      <i class="bi bi-camera"></i> Cargar
+                    </button>
+                  </div>
+                  <div *ngIf="control.get('evidencia')?.value" class="text-center">
+                    <small class="d-block text-truncate">{{ getFileName(control.get('evidencia')?.value) }}</small>
+                    <div class="btn-group btn-group-sm mt-1">
+                      <button type="button" class="btn btn-outline-info" (click)="viewImage(control.get('evidencia')?.value)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-danger" (click)="removeImage(i)">
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
-                </div>
-            </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <button type="button" class="btn btn-outline-danger btn-sm" 
+                          (click)="removeMovilidad(i)" 
+                          [disabled]="gastosMovilidadArray.length <= 1">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <button type="button" class="btn btn-outline-success btn-sm" (click)="addMovilidad()">
+            <i class="bi bi-plus-circle"></i> Añadir Gasto
+          </button>
+        </div>
+      </div>
+    </div>
 
-            <button type="button" class="add-button" (click)="addMovilidad()">+ Añadir Gasto de Movilidad</button>
-        </section>
+    <!-- 3. Firma del Becado -->
+    <div class="card mb-3">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">3. Firma del Becado</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Lugar de la Firma:</label>
+          <input type="text" class="form-control" formControlName="lugarFirma" 
+                 placeholder="Ej: Huaral, Chancay, Josefa Espinoza" required>
+        </div>
 
-        <section class="firma-section">
-            <h2>3. Firma del Becado</h2>
-            <div class="row">
-                <div class="form-group large">
-                    <label for="lugarFirma">Lugar de la Firma:</label>
-                    <input type="text" id="lugarFirma" formControlName="lugarFirma" 
-                           placeholder="Ej: Huaral, Chancay Josefa Espinoza" required>
+        <div class="row">
+          <!-- Opción A: Dibujar firma -->
+          <div class="col-md-6 mb-3">
+            <div class="card h-100">
+              <div class="card-header bg-light py-2">
+                <h6 class="mb-0"><i class="bi bi-pencil"></i> Opción A: Dibujar Firma</h6>
+              </div>
+              <div class="card-body text-center">
+                <canvas #firmaCanvas 
+                        class="signature-canvas mb-2"
+                        width="400" 
+                        height="150"
+                        (mousedown)="startDrawing($event)"
+                        (mousemove)="draw($event)"
+                        (mouseup)="stopDrawing()"
+                        (mouseleave)="stopDrawing()"
+                        (touchstart)="startDrawingTouch($event)"
+                        (touchmove)="drawTouch($event)"
+                        (touchend)="stopDrawing()">
+                </canvas>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="clearFirma()">
+                    <i class="bi bi-eraser"></i> Limpiar
+                  </button>
+                  <small class="text-muted">Firme en el recuadro</small>
                 </div>
+              </div>
             </div>
-            
-            <div class="firma-options">
-                <div class="firma-option">
-                    <h3>Opción A: Dibujar Firma</h3>
-                    <div class="firma-canvas-container">
-                        <canvas #firmaCanvas 
-                                width="400" 
-                                height="150"
-                                (mousedown)="startDrawing($event)"
-                                (mousemove)="draw($event)"
-                                (mouseup)="stopDrawing()"
-                                (mouseleave)="stopDrawing()"
-                                (touchstart)="startDrawingTouch($event)"
-                                (touchmove)="drawTouch($event)"
-                                (touchend)="stopDrawing()">
-                        </canvas>
-                        <div class="firma-actions">
-                            <button type="button" class="clear-firma-button" (click)="clearFirma()">
-                                🗑️ Limpiar Firma
-                            </button>
-                            <span class="firma-guia">Firme dentro del recuadro (400x150px)</span>
-                        </div>
+          </div>
+
+          <!-- Opción B: Cargar imagen -->
+          <div class="col-md-6 mb-3">
+            <div class="card h-100">
+              <div class="card-header bg-light py-2">
+                <h6 class="mb-0"><i class="bi bi-upload"></i> Opción B: Cargar Imagen</h6>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-info py-2">
+                  <small><i class="bi bi-info-circle"></i> Medidas recomendadas: 400x150px</small>
+                </div>
+                <div class="upload-area" (click)="firmaFileInput.click()">
+                  <input type="file" #firmaFileInput (change)="onFirmaImageSelected($event)" accept="image/*" style="display: none">
+                  
+                  <div *ngIf="!rendicionForm.get('firmaImagen')?.value">
+                    <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
+                    <p class="text-muted mb-1">Haga clic para seleccionar</p>
+                    <small class="text-muted">PNG, JPG, JPEG</small>
+                  </div>
+                  
+                  <div *ngIf="rendicionForm.get('firmaImagen')?.value">
+                    <img [src]="rendicionForm.get('firmaImagen')?.value" class="img-thumbnail mb-2" style="max-height: 100px;">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-info" (click)="viewFirmaImage($event)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-danger" (click)="removeFirmaImage($event)">
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
+                    <p class="mt-2 mb-0"><small>{{ getFirmaImageName() }}</small></p>
+                  </div>
                 </div>
-
-                <div class="firma-option">
-                    <h3>Opción B: Cargar Imagen de Firma</h3>
-                    <div class="firma-upload-container">
-                        <div class="upload-info">
-                            <p><strong>Medidas recomendadas:</strong> 400x150px</p>
-                            <p><strong>Formatos:</strong> PNG, JPG, JPEG</p>
-                            <p><em>La imagen se ajustará automáticamente al tamaño requerido</em></p>
-                        </div>
-                        
-                        <div class="upload-area" 
-                             [class.has-image]="rendicionForm.get('firmaImagen')?.value"
-                             (click)="firmaFileInput.click()">
-                            
-                            <input type="file" 
-                                   #firmaFileInput
-                                   (change)="onFirmaImageSelected($event)" 
-                                   accept="image/*" 
-                                   style="display: none">
-                            
-                            <div *ngIf="!rendicionForm.get('firmaImagen')?.value" class="upload-placeholder">
-                                <div class="upload-icon">📁</div>
-                                <p>Haga clic para seleccionar imagen de firma</p>
-                                <p class="upload-subtext">Tamaño recomendado: 400x150px</p>
-                            </div>
-                            
-                            <div *ngIf="rendicionForm.get('firmaImagen')?.value" class="upload-preview">
-                                <img [src]="rendicionForm.get('firmaImagen')?.value" alt="Firma cargada">
-                                <div class="upload-actions">
-                                    <button type="button" class="view-button" (click)="viewFirmaImage($event)">
-                                        👁️ Ver
-                                    </button>
-                                    <button type="button" class="delete-button" (click)="removeFirmaImage($event)">
-                                        🗑️ Eliminar
-                                    </button>
-                                </div>
-                                <p class="file-name">{{ getFirmaImageName() }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div class="firma-seleccionada" *ngIf="getFirmaSeleccionada()">
-                <strong>Firma seleccionada:</strong> 
-                <span>{{ getFirmaSeleccionada() }}</span>
-                <button type="button" class="limpiar-todo-button" (click)="limpiarTodasFirmas()">
-                    🗑️ Limpiar Todas las Firmas
-                </button>
+        <!-- Indicador de firma seleccionada -->
+        <div *ngIf="getFirmaSeleccionada()" class="firma-seleccionada">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><i class="bi bi-check-circle-fill text-success"></i> Firma seleccionada:</strong>
+              <span class="ms-2">{{ getFirmaSeleccionada() }}</span>
             </div>
-        </section>
-
-        <footer class="footer-summary">
-            <div class="total-summary">
-                <strong>TOTAL GASTOS A RENDIR:</strong>
-                <span>S/ {{ totalGastos() | number:'1.2-2' }}</span>
-            </div>
-            
-            <button type="submit" [disabled]="rendicionForm.invalid" class="submit-button">
-                GENERAR Y DESCARGAR PDF
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="limpiarTodasFirmas()">
+              <i class="bi bi-trash"></i> Limpiar Todas
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <button *ngIf="pdfGenerado" 
-                    type="button" 
-                    (click)="redirigirAGoogleForms()"
-                    class="drive-button">
-                📤 SUBIR ARCHIVO AL FORMULARIO
-            </button>
-
-            <p *ngIf="rendicionForm.invalid && rendicionForm.touched" class="error-message">
-                Por favor, complete todos los campos requeridos para continuar.
-            </p>
-
-            <div *ngIf="uploadMessage" class="upload-message" [class.success]="uploadSuccess" [class.error]="!uploadSuccess">
-                {{ uploadMessage }}
+    <!-- Footer con botones -->
+    <div class="card">
+      <div class="card-body">
+        <div class="row align-items-center mb-3">
+          <div class="col-md-6">
+            <div class="alert alert-primary mb-0 py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <strong class="h5 mb-0">TOTAL GASTOS A RENDIR:</strong>
+                <span class="h4 mb-0 text-primary">S/ {{ totalGastos() | number:'1.2-2' }}</span>
+              </div>
             </div>
-        </footer>
+          </div>
+          <div class="col-md-6">
+            <div *ngIf="rendicionForm.invalid && rendicionForm.touched" class="alert alert-warning py-2">
+              <i class="bi bi-exclamation-triangle"></i> Complete todos los campos requeridos.
+            </div>
+          </div>
+        </div>
 
-    </form>
+        <div class="d-grid gap-2">
+          <button type="submit" [disabled]="rendicionForm.invalid" class="btn btn-warning btn-lg">
+            <i class="bi bi-file-earmark-pdf"></i> GENERAR Y DESCARGAR PDF
+          </button>
+
+          <button *ngIf="pdfGenerado" 
+                  type="button" 
+                  (click)="redirigirAGoogleForms()"
+                  class="btn btn-success btn-lg">
+            <i class="bi bi-cloud-upload"></i> SUBIR ARCHIVO AL FORMULARIO
+          </button>
+        </div>
+
+        <!-- Mensaje de estado -->
+        <div *ngIf="uploadMessage" class="alert mt-3" 
+             [class.alert-success]="uploadSuccess" 
+             [class.alert-danger]="!uploadSuccess">
+          {{ uploadMessage }}
+        </div>
+      </div>
+    </div>
+  </form>
 </div>
 
-
-<div *ngIf="selectedImage" class="image-modal" (click)="closeImageModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <span class="close-button" (click)="closeImageModal()">&times;</span>
-        <img [src]="selectedImage" alt="Evidencia">
+<!-- Modal para ver imágenes -->
+<div *ngIf="selectedImage" class="modal fade show d-block" style="background: rgba(0,0,0,0.8);" (click)="closeImageModal()">
+  <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Evidencia</h5>
+        <button type="button" class="btn-close" (click)="closeImageModal()"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img [src]="selectedImage" class="modal-image img-fluid" alt="Evidencia">
+      </div>
     </div>
+  </div>
 </div>
