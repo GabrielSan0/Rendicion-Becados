@@ -3,6 +3,7 @@
   border: 1px solid #dee2e6;
   cursor: crosshair;
   touch-action: none;
+  width: 100%;
 }
 
 .upload-area {
@@ -39,4 +40,53 @@
   border-radius: 5px;
   padding: 10px;
   margin-top: 10px;
+}
+
+/* Responsive Table Styles */
+@media (max-width: 768px) {
+  .mobile-responsive-table thead {
+    display: none;
+  }
+
+  .mobile-responsive-table tbody tr {
+    display: block;
+    margin-bottom: 1.5rem;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+  }
+
+  .mobile-responsive-table td {
+    display: block;
+    border: none;
+    padding: 0.5rem 0;
+    text-align: left;
+  }
+
+  .mobile-responsive-table td:last-child {
+    border-bottom: none;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px dashed #dee2e6;
+  }
+
+  .mobile-actions button {
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  /* Make inputs taller for easier tapping */
+  .form-control-sm {
+    min-height: 38px;
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+  }
+
+  /* Main container adjustments */
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }

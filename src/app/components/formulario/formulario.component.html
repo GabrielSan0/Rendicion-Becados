@@ -4,7 +4,7 @@
     <div>
       <h1 class="h3 text-primary mb-1">Rendición de Cuentas</h1>
       <p class="mb-0 text-muted">
-        <strong>{{ becado()?.name || 'Becado' }}</strong> | 
+        <strong>{{ becado()?.name || 'Becado' }}</strong> |
         DNI: <strong>{{ becado()?.dni || 'N/A' }}</strong>
       </p>
     </div>
@@ -23,12 +23,15 @@
         <div class="row">
           <div class="col-md-6 mb-2">
             <label class="form-label">Del Día:</label>
-            <input type="date" class="form-control" formControlName="fechaInicio" required>
+            <input type="date" class="form-control" formControlName="fechaInicio"
+              [class.is-invalid]="isFieldInvalid('fechaInicio')" required>
           </div>
           <div class="col-md-6 mb-2">
             <label class="form-label">Al Día:</label>
-            <input type="date" class="form-control" formControlName="fechaFin" required>
+            <input type="date" class="form-control" formControlName="fechaFin"
+              [class.is-invalid]="isFieldInvalid('fechaFin')" required>
           </div>
+
         </div>
       </div>
     </div>
@@ -40,8 +43,8 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
+          <table class="table table-hover mb-0 mobile-responsive-table">
+            <thead class="table-light d-none d-md-table-header-group">
               <tr>
                 <th width="15%">FECHA</th>
                 <th width="25%">RUTA (DEL)</th>
@@ -53,12 +56,33 @@
             </thead>
             <tbody formArrayName="gastosMovilidad">
               <tr *ngFor="let control of gastosMovilidadArray.controls; let i = index" [formGroupName]="i">
-                <td><input type="date" class="form-control form-control-sm" formControlName="fecha" required></td>
-                <td><input type="text" class="form-control form-control-sm" formControlName="rutaDel" placeholder="Ej: Chancay" required></td>
-                <td><input type="text" class="form-control form-control-sm" formControlName="rutaAl" placeholder="Ej: Senati" required></td>
-                <td><input type="number" class="form-control form-control-sm" formControlName="monto" min="0.01" placeholder="0.00" step="0.01" required></td>
                 <td>
-                  <input type="file" #fileInput (change)="onFileSelected($event, i)" accept="image/*" style="display: none">
+                  <span class="d-md-none fw-bold d-block mb-1 text-muted small">FECHA:</span>
+                  <input type="date" class="form-control form-control-sm" formControlName="fecha"
+                    [class.is-invalid]="isArrayFieldInvalid('gastosMovilidad', i, 'fecha')" required>
+                </td>
+                <td>
+                  <span class="d-md-none fw-bold d-block mb-1 text-muted small">RUTA (DEL):</span>
+                  <input type="text" class="form-control form-control-sm" formControlName="rutaDel"
+                    [class.is-invalid]="isArrayFieldInvalid('gastosMovilidad', i, 'rutaDel')" placeholder="Ej: Chancay"
+                    required>
+                </td>
+                <td>
+                  <span class="d-md-none fw-bold d-block mb-1 text-muted small">RUTA (AL):</span>
+                  <input type="text" class="form-control form-control-sm" formControlName="rutaAl"
+                    [class.is-invalid]="isArrayFieldInvalid('gastosMovilidad', i, 'rutaAl')" placeholder="Ej: Senati"
+                    required>
+                </td>
+                <td>
+                  <span class="d-md-none fw-bold d-block mb-1 text-muted small">MONTO (S/):</span>
+                  <input type="number" class="form-control form-control-sm" formControlName="monto" min="0.01"
+                    [class.is-invalid]="isArrayFieldInvalid('gastosMovilidad', i, 'monto')" placeholder="0.00"
+                    step="0.01" required>
+                </td>
+                <td>
+                  <span class="d-md-none fw-bold d-block mb-1 text-muted small">EVIDENCIA:</span>
+                  <input type="file" #fileInput (change)="onFileSelected($event, i)" accept="image/*"
+                    style="display: none">
                   <div *ngIf="!control.get('evidencia')?.value">
                     <button type="button" class="btn btn-outline-primary btn-sm w-100" (click)="fileInput.click()">
                       <i class="bi bi-camera"></i> Cargar
@@ -66,8 +90,9 @@
                   </div>
                   <div *ngIf="control.get('evidencia')?.value" class="text-center">
                     <small class="d-block text-truncate">{{ getFileName(control.get('evidencia')?.value) }}</small>
-                    <div class="btn-group btn-group-sm mt-1">
-                      <button type="button" class="btn btn-outline-info" (click)="viewImage(control.get('evidencia')?.value)">
+                    <div class="btn-group btn-group-sm mt-1 w-100">
+                      <button type="button" class="btn btn-outline-info"
+                        (click)="viewImage(control.get('evidencia')?.value)">
                         <i class="bi bi-eye"></i>
                       </button>
                       <button type="button" class="btn btn-outline-danger" (click)="removeImage(i)">
@@ -76,11 +101,10 @@
                     </div>
                   </div>
                 </td>
-                <td class="text-center">
-                  <button type="button" class="btn btn-outline-danger btn-sm" 
-                          (click)="removeMovilidad(i)" 
-                          [disabled]="gastosMovilidadArray.length <= 1">
-                    <i class="bi bi-x-lg"></i>
+                <td class="text-center mobile-actions">
+                  <button type="button" class="btn btn-outline-danger btn-sm w-100" (click)="removeMovilidad(i)"
+                    [disabled]="gastosMovilidadArray.length <= 1">
+                    <i class="bi bi-x-lg"></i> Eliminar
                   </button>
                 </td>
               </tr>
@@ -103,8 +127,9 @@
       <div class="card-body">
         <div class="mb-3">
           <label class="form-label">Lugar de la Firma:</label>
-          <input type="text" class="form-control" formControlName="lugarFirma" 
-                 placeholder="Ej: Huaral, Chancay, Josefa Espinoza" required>
+          <input type="text" class="form-control" formControlName="lugarFirma"
+            [class.is-invalid]="isFieldInvalid('lugarFirma')" placeholder="Ej: Huaral, Chancay, Josefa Espinoza"
+            required>
         </div>
 
         <div class="row">
@@ -115,17 +140,9 @@
                 <h6 class="mb-0"><i class="bi bi-pencil"></i> Opción A: Dibujar Firma</h6>
               </div>
               <div class="card-body text-center">
-                <canvas #firmaCanvas 
-                        class="signature-canvas mb-2"
-                        width="400" 
-                        height="150"
-                        (mousedown)="startDrawing($event)"
-                        (mousemove)="draw($event)"
-                        (mouseup)="stopDrawing()"
-                        (mouseleave)="stopDrawing()"
-                        (touchstart)="startDrawingTouch($event)"
-                        (touchmove)="drawTouch($event)"
-                        (touchend)="stopDrawing()">
+                <canvas #firmaCanvas class="signature-canvas mb-2" (mousedown)="startDrawing($event)"
+                  (mousemove)="draw($event)" (mouseup)="stopDrawing()" (mouseleave)="stopDrawing()"
+                  (touchstart)="startDrawingTouch($event)" (touchmove)="drawTouch($event)" (touchend)="stopDrawing()">
                 </canvas>
                 <div class="d-flex justify-content-between">
                   <button type="button" class="btn btn-outline-danger btn-sm" (click)="clearFirma()">
@@ -148,16 +165,18 @@
                   <small><i class="bi bi-info-circle"></i> Medidas recomendadas: 400x150px</small>
                 </div>
                 <div class="upload-area" (click)="firmaFileInput.click()">
-                  <input type="file" #firmaFileInput (change)="onFirmaImageSelected($event)" accept="image/*" style="display: none">
-                  
+                  <input type="file" #firmaFileInput (change)="onFirmaImageSelected($event)" accept="image/*"
+                    style="display: none">
+
                   <div *ngIf="!rendicionForm.get('firmaImagen')?.value">
                     <i class="bi bi-cloud-upload display-6 text-muted mb-2"></i>
                     <p class="text-muted mb-1">Haga clic para seleccionar</p>
                     <small class="text-muted">PNG, JPG, JPEG</small>
                   </div>
-                  
+
                   <div *ngIf="rendicionForm.get('firmaImagen')?.value">
-                    <img [src]="rendicionForm.get('firmaImagen')?.value" class="img-thumbnail mb-2" style="max-height: 100px;">
+                    <img [src]="rendicionForm.get('firmaImagen')?.value" class="img-thumbnail mb-2"
+                      style="max-height: 100px;">
                     <div class="btn-group btn-group-sm">
                       <button type="button" class="btn btn-outline-info" (click)="viewFirmaImage($event)">
                         <i class="bi bi-eye"></i>
@@ -193,7 +212,7 @@
     <div class="card">
       <div class="card-body">
         <div class="row align-items-center mb-3">
-          <div class="col-md-6">
+          <div class="col-md-12">
             <div class="alert alert-primary mb-0 py-2">
               <div class="d-flex justify-content-between align-items-center">
                 <strong class="h5 mb-0">TOTAL GASTOS A RENDIR:</strong>
@@ -201,7 +220,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-12">
             <div *ngIf="rendicionForm.invalid && rendicionForm.touched" class="alert alert-warning py-2">
               <i class="bi bi-exclamation-triangle"></i> Complete todos los campos requeridos.
             </div>
@@ -209,22 +228,18 @@
         </div>
 
         <div class="d-grid gap-2">
-          <button type="submit" [disabled]="rendicionForm.invalid" class="btn btn-warning btn-lg">
+          <button type="submit" class="btn btn-warning btn-lg">
             <i class="bi bi-file-earmark-pdf"></i> GENERAR Y DESCARGAR PDF
           </button>
 
-          <button *ngIf="pdfGenerado" 
-                  type="button" 
-                  (click)="redirigirAGoogleForms()"
-                  class="btn btn-success btn-lg">
+          <button *ngIf="pdfGenerado" type="button" (click)="redirigirAGoogleForms()" class="btn btn-success btn-lg">
             <i class="bi bi-cloud-upload"></i> SUBIR ARCHIVO AL FORMULARIO
           </button>
         </div>
 
         <!-- Mensaje de estado -->
-        <div *ngIf="uploadMessage" class="alert mt-3" 
-             [class.alert-success]="uploadSuccess" 
-             [class.alert-danger]="!uploadSuccess">
+        <div *ngIf="uploadMessage" class="alert mt-3" [class.alert-success]="uploadSuccess"
+          [class.alert-danger]="!uploadSuccess">
           {{ uploadMessage }}
         </div>
       </div>
@@ -233,7 +248,8 @@
 </div>
 
 <!-- Modal para ver imágenes -->
-<div *ngIf="selectedImage" class="modal fade show d-block" style="background: rgba(0,0,0,0.8);" (click)="closeImageModal()">
+<div *ngIf="selectedImage" class="modal fade show d-block" style="background: rgba(0,0,0,0.8);"
+  (click)="closeImageModal()">
   <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
     <div class="modal-content">
       <div class="modal-header">
