@@ -462,6 +462,45 @@ export class FormularioComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // --- Modal de Firma Logic ---
+  openSignatureModal(): void {
+    const modal = document.getElementById('signatureModal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'block';
+      modal.removeAttribute('aria-hidden');
+      modal.setAttribute('aria-modal', 'true');
+
+      // Inicializar canvas después de que el modal sea visible
+      setTimeout(() => {
+        this.initFirmaCanvas(true);
+      }, 100);
+    }
+  }
+
+  closeSignatureModal(): void {
+    const modal = document.getElementById('signatureModal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      modal.removeAttribute('aria-modal');
+    }
+  }
+
+  saveSignature(): void {
+    const canvas = this.firmaCanvas.nativeElement;
+    // Verificar si está vacío (opcional, por ahora asumimos que si guarda es lo que quiere)
+    // Se podría checar si isDrawing se activó alguna vez o si el canvas está en blanco.
+
+    const signatureData = canvas.toDataURL('image/png');
+    this.rendicionForm.patchValue({
+      firmaData: signatureData
+    });
+    this.closeSignatureModal();
+  }
+  // ----------------------------
+
   clearFirma(redibujar: boolean = true): void {
     const canvas = this.firmaCanvas.nativeElement;
     const ctx = canvas.getContext('2d');
@@ -473,9 +512,30 @@ export class FormularioComponent implements OnInit, AfterViewInit {
       }
     }
 
-    this.rendicionForm.patchValue({
-      firmaData: ''
-    });
+    // Si estamos limpiando desde el modal, NO borramos el valor del formulario todavía?
+    // O si? "Limpiar" en modal solo limpia el canvas actual.
+    // Si es desde afuera (eliminar), borramos el valor.
+    // Vamos a diferenciar:
+    // clearFirma() se usa para el canvas.
+    // Si queremos borrar la firma guardada, usamos otra lógica o lo llamamos explícitamente.
+    // El botón "Eliminar" de la preview llama a `clearFirma(false)` lo cual borra el canvas (invisble) y el valor.
+    // El botón "Limpiar" del modal llama a `clearFirma(true)` lo cual borra el canvas y el valor?
+    // Mmm, el botón Limpiar del modal debería borrar solo el canvas, no el form value (hasta que guardes).
+    // Pero por simplicidad, dejémoslo que borre el value, total si cancelas no se guarda... espera.
+    // Si borro value y cancelo, se perdió? 
+    // Mejor: clearFirma solo borra canvas.
+    // saveSignature actualiza value.
+    // eliminarFirma (nueva) borra value.
+
+    // Ajuste rápido:
+    // Si redibujar es true (modal), solo limpia canvas.
+    // Si redibujar es false (eliminar desde preview), limpia value.
+
+    if (!redibujar) {
+      this.rendicionForm.patchValue({
+        firmaData: ''
+      });
+    }
   }
 
   submitRendicion(): void {

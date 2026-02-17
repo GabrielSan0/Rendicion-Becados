@@ -140,15 +140,24 @@
                 <h6 class="mb-0"><i class="bi bi-pencil"></i> Opción A: Dibujar Firma</h6>
               </div>
               <div class="card-body text-center">
-                <canvas #firmaCanvas class="signature-canvas mb-2" (mousedown)="startDrawing($event)"
-                  (mousemove)="draw($event)" (mouseup)="stopDrawing()" (mouseleave)="stopDrawing()"
-                  (touchstart)="startDrawingTouch($event)" (touchmove)="drawTouch($event)" (touchend)="stopDrawing()">
-                </canvas>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="clearFirma()">
-                    <i class="bi bi-eraser"></i> Limpiar
+                <div *ngIf="!rendicionForm.get('firmaData')?.value" class="py-3">
+                  <button type="button" class="btn btn-outline-primary" (click)="openSignatureModal()">
+                    <i class="bi bi-pen"></i> DIBUJAR FIRMA
                   </button>
-                  <small class="text-muted">Firme en el recuadro</small>
+                  <p class="text-muted small mt-2">Haga clic para abrir el panel de firma</p>
+                </div>
+
+                <div *ngIf="rendicionForm.get('firmaData')?.value">
+                  <img [src]="rendicionForm.get('firmaData')?.value" class="img-fluid border mb-3 d-block mx-auto"
+                    style="max-height: 150px; background: #fff; min-width: 250px;">
+                  <div class="d-grid gap-2 d-md-block">
+                    <button type="button" class="btn btn-outline-warning btn-sm me-md-2" (click)="openSignatureModal()">
+                      <i class="bi bi-pencil-square"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" (click)="clearFirma(false)">
+                      <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,6 +267,36 @@
       </div>
       <div class="modal-body text-center">
         <img [src]="selectedImage" class="modal-image img-fluid" alt="Evidencia">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Dibujar Firma -->
+<div class="modal fade" id="signatureModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pen"></i> Dibujar Firma</h5>
+        <button type="button" class="btn-close" (click)="closeSignatureModal()"></button>
+      </div>
+      <div class="modal-body text-center bg-light">
+        <div class="border bg-white shadow-sm mx-auto" style="width: 300px; height: 150px;">
+          <canvas #firmaCanvas width="300" height="150" class="signature-canvas" (mousedown)="startDrawing($event)"
+            (mousemove)="draw($event)" (mouseup)="stopDrawing()" (mouseleave)="stopDrawing()"
+            (touchstart)="startDrawingTouch($event)" (touchmove)="drawTouch($event)" (touchend)="stopDrawing()">
+          </canvas>
+        </div>
+        <p class="text-muted small mt-2 mb-0">Dibuje su firma dentro del recuadro</p>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" (click)="clearFirma(true)">
+          <i class="bi bi-eraser"></i> Limpiar
+        </button>
+        <div>
+          <button type="button" class="btn btn-secondary me-2" (click)="closeSignatureModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="saveSignature()">Guardar Firma</button>
+        </div>
       </div>
     </div>
   </div>
