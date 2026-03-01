@@ -88,11 +88,13 @@ export class FormularioComponent implements OnInit, AfterViewInit {
     if (file) {
       if (!file.type.match('image.*')) {
         alert('Solo se permiten archivos de imagen (JPEG, PNG, etc.)');
+        event.target.value = '';
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
         alert('La imagen es demasiado grande. Máximo 5MB permitido.');
+        event.target.value = '';
         return;
       }
 
@@ -103,6 +105,7 @@ export class FormularioComponent implements OnInit, AfterViewInit {
           evidencia: e.target.result,
           nombreArchivo: file.name
         });
+        event.target.value = '';
       };
       reader.readAsDataURL(file);
     }
@@ -399,11 +402,13 @@ export class FormularioComponent implements OnInit, AfterViewInit {
     if (file) {
       if (!file.type.match('image.*')) {
         alert('Solo se permiten archivos de imagen (JPEG, PNG, etc.)');
+        event.target.value = '';
         return;
       }
 
       if (file.size > 2 * 1024 * 1024) {
         alert('La imagen de firma es demasiado grande. Máximo 2MB permitido.');
+        event.target.value = '';
         return;
       }
 
@@ -420,6 +425,7 @@ export class FormularioComponent implements OnInit, AfterViewInit {
           firmaImagenNombre: file.name,
           firmaData: ''
         });
+        event.target.value = '';
       };
       reader.readAsDataURL(file);
     }

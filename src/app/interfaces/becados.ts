@@ -26,5 +26,4 @@ export const BECADOS_DATA: AuthUser[] = [
 
 ];
 
-export const PASSWORD_FIJA = 'Colquisiri2025$$';
 export const USER_STORAGE_KEY = 'currentUser';
